@@ -1,0 +1,65 @@
+name: Build and Release
+
+on:
+  push:
+    branches: [ master ]
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.25'
+    
+    - name: Verify Go module
+      run: |
+        if [ ! -f go.mod ]; then
+          go mod init github.com/noiseonwires/labean
+        fi
+        go mod tidy
+    
+    - name: Generate release version
+      id: version
+      run: |
+        VERSION=$(date +"%y%m%d")
+        echo "version=$VERSION" >> $GITHUB_OUTPUT
+        echo "Generated version: $VERSION"
+    
+    - name: Build for Linux amd64
+      run: |
+        GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o labean-linux-amd64 .
+    
+    - name: Build for Linux arm64
+      run: |
+        GOOS=linux GOARCH=arm64 go build -ldflags="-s -w" -o labean-linux-arm64 .
+    
+    - name: Create Release
+      id: create_release
+      uses: softprops/action-gh-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: v${{ steps.version.outputs.version }}
+        name: Release v${{ steps.version.outputs.version }}
+        body: |
+          Automated release built from commit ${{ github.sha }}
+          
+          ## Changes
+          - Built from latest master branch
+          
+          ## Binaries
+          - `labean-linux-amd64`: Linux x86_64 binary
+          - `labean-linux-arm64`: Linux ARM64 binary
+        draft: false
+        prerelease: false
+        files: |
+          ./labean-linux-amd64
+          ./labean-linux-arm64
