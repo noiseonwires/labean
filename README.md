@@ -17,7 +17,7 @@ Another purpose is to disguise some services (e.g. VPN or proxy) running on the 
 
 ### Why Labean?
 Classic implementations of port knockers (like [knockd](http://www.zeroflux.org/projects/knock)) allow a client to open ports or start services by generating a connection attempt on a set of prespecified closed ports. This is simple and usually reliable, but there are some tricky cases. First of all, this requires using special clients or scripts on the client device (including mobile gadgets or network routers). A more significant problem is that all ports and protocols except standard 80 (HTTP) and 443 (HTTPS) can be banned on a corporate or ISP firewall, so you can't use 'classic' knocking in this case. That's why Labean was created.
-SStarted back in 2018, Labean was among the earliest web-based port knockers of its kind, and it remains a long-living project to this day.
+Started back in 2018, Labean was among the earliest web-based port knockers of its kind, and it remains a long-living project to this day.
 
 ### How does it work?
 Briefly: there is a front-end web server (like [nginx](http://nginx.org/) or [caddy](https://caddyserver.com/)) running on your VDS/VPS/etc., and it serves some ordinary web content like cute kittens' videos, Linux distros' ISOs, or a Wikipedia mirror. But when you want to connect to the hidden service (VPN, proxy, ssh daemon, etc.), you perform a GET request (using cURL or a web browser) like:
