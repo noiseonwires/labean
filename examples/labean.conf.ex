@@ -5,6 +5,12 @@
   "external_ipv6": "",
   "real_ip_header": "X-Real-IP",
   "allow_explicit_ips": false,
+  "tls_cert": "",
+  "tls_key": "",
+  "www_root": "",
+  "auth_token": "",
+  "username": "",
+  "password": "",
   "tasks": [ 
     {
       "name": "vpn",

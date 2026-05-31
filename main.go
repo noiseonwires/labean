@@ -80,7 +80,11 @@ func main() {
 	signal.Notify(monitor.terminate, syscall.SIGINT, syscall.SIGTERM)
 	env.monitor = monitor
 
-	http.Handle("/", handler{env, defaultHandler})
+	if config.WwwRoot != "" {
+		http.Handle("/", http.FileServer(http.Dir(config.WwwRoot)))
+	} else {
+		http.Handle("/", handler{env, defaultHandler})
+	}
 	for _, cmd := range config.Tasks {
 		url := fmt.Sprintf("%s/%s/", config.UrlPrefix, cmd.Name)
 		http.Handle(url, handler{env, taskHandler})
@@ -89,8 +93,13 @@ func main() {
 
 	go monitor.Process()
 
-	syslogger.Info(fmt.Sprintf("Starting server on '%s'...", config.Listen))
-	err = http.ListenAndServe(config.Listen, nil)
+	if config.TLSCert != "" && config.TLSKey != "" {
+		syslogger.Info(fmt.Sprintf("Starting HTTPS server on '%s'...", config.Listen))
+		err = http.ListenAndServeTLS(config.Listen, config.TLSCert, config.TLSKey, nil)
+	} else {
+		syslogger.Info(fmt.Sprintf("Starting server on '%s'...", config.Listen))
+		err = http.ListenAndServe(config.Listen, nil)
+	}
 	if err != nil {
 		syslogger.Crit(err.Error())
 		os.Exit(1)

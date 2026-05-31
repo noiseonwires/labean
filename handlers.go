@@ -37,8 +37,33 @@ type handler struct {
 	H func(e *state, w http.ResponseWriter, r *http.Request) (result *taskResult, genericErr error)
 }
 
+func (e *state) authorized(r *http.Request) bool {
+	c := e.config
+	if c.AuthToken != "" {
+		token := r.Header.Get("X-Auth-Token")
+		if token == "" {
+			token = r.URL.Query().Get("token")
+		}
+		if token != c.AuthToken {
+			return false
+		}
+	}
+	if c.Username != "" || c.Password != "" {
+		user, pass, ok := r.BasicAuth()
+		if !ok || user != c.Username || pass != c.Password {
+			return false
+		}
+	}
+	return true
+}
+
 func (h handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Cache-Control", "no-cache, no-store, must-revalidate")
+	if !h.state.authorized(r) {
+		w.Header().Set("WWW-Authenticate", `Basic realm="labean"`)
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
 	taskResult, genericErr := h.H(h.state, w, r)
 	if genericErr != nil {
 		// I know that http.StatusBadRequest has to be here, but frankly speaking I simply like 418 status

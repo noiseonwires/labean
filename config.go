@@ -40,6 +40,12 @@ type appConfig struct {
 	Tasks        map[string]*task
 	UrlPrefix    string `json:"url_prefix"`
 	ExplicitIP   bool   `json:"allow_explicit_ips"`
+	TLSCert      string `json:"tls_cert"`
+	TLSKey       string `json:"tls_key"`
+	WwwRoot      string `json:"www_root"`
+	AuthToken    string `json:"auth_token"`
+	Username     string `json:"username"`
+	Password     string `json:"password"`
 }
 
 func loadConfig(filename string) (newConfig *appConfig, err error) {

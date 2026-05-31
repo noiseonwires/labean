@@ -55,16 +55,18 @@ systemctl start labean
 systemctl enable labean
 ```
 
-Another important step of Labean installation is the configuration of your frontend web server (reverse-proxy). Labean does not support SSL, HTTP auth, or serving static or dynamic websites itself. I like the "UNIX-way" philosophy: "Make each program do one thing well." So we have to use a web server with Labean. It should perform the following things:
+Another important step is to decide how Labean should be exposed. You have two options.
+
+The first one is to put Labean behind a frontend web server (reverse-proxy) like Caddy or Nginx, which performs the following things:
 
 - serve HTTPS (SSL) connections with valid certificates
 - require basic HTTP authorization for the 'secret' URL
 - add an 'X-Real-IP' or similar header to the HTTP request
 - pass the request to Labean (running on another TCP port like 8080) for the 'secret' URL
 
-I recommend using Caddy or Nginx for this.
-You can find the simplest variant of the config in the `examples` directory of the source tree.
-Anyway, you can use any other web server/reverse-proxy if you want.
+You can find the simplest variant of such config in the `examples` directory of the source tree, but you can use any other web server/reverse-proxy if you want.
+
+The second option is to let Labean handle everything itself: it can serve HTTPS (just point it to your `tls_cert` and `tls_key`), require a token or basic authentication, serve a static website from a directory, and read the real client IP directly from the connection. This way you don't need any reverse-proxy at all. See the config fields below for details.
 
 ### Config file
 Labean config file is a simple JSON document. 
@@ -102,6 +104,10 @@ Here is the description of its fields:
 - `"external_ipv6"`: the same, but for IPv6 (if you use it);
 - `"real_ip_header"`: the name of the HTTP header with the real client IP added by the reverse-proxy (usually it is "X-Real-IP" or "X-Forwarded-For"); leave it empty if you don't use a reverse-proxy;
 - `"allow_explicit_ips"`: if true, you can explicitly specify the client IP address in the GET request, like `https://someserver.org/secret/service/off/?ip=123.56.78.9`. This can be helpful when you've established a VPN connection and later want to manually deactivate the secret service using Labean's internal (local) IP inside the tunnel. This feature allows you to stop services started by other users, so use it very carefully; it is disabled by default.
+- `"tls_cert"` and `"tls_key"`: paths to the certificate and private key files. If both are set, Labean serves HTTPS directly instead of plain HTTP (so you can run it without a reverse-proxy). Leave them empty to serve plain HTTP;
+- `"www_root"`: path to a directory to serve as a static website on the root URL. If set, Labean acts as a simple static file server for any non-task request; leave it empty to keep the default behavior;
+- `"auth_token"`: if set, every task request must provide this token via the `X-Auth-Token` header or the `token` query parameter (e.g. `.../secret/vpn/on?token=...`); leave it empty to disable token auth;
+- `"username"` and `"password"`: if either is set, every task request must pass HTTP Basic authentication with these credentials; leave them empty to disable basic auth;
 - `"tasks"`: the array of 'tasks' to start or stop hidden services;
 - `"name"`: the unique name of the hidden service. You will use it in your HTTP GET queries: `https://someserver.org/secret/<name>/{on|off}`;
 - `"timeout"`: timeout to automatically switch your hidden service or firewall rule "off" after "on". If it is set to 0, the timeout feature will be disabled and you'll need to switch your service "off" manually;
@@ -115,5 +121,4 @@ Feel free to open issues on GitHub or make pull requests if you want to improve 
 ### License
 Labean is released under the BSD 2-Clause "Simplified" License.
 
-Copyright (c) 2018-2026, Kirill Ovchinnikov
-
+Copyright (c) 2018-2026, Kirill aka Noiseonwires
