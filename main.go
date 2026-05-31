@@ -26,7 +26,6 @@ package main
 import (
 	"fmt"
 	"log"
-	"log/syslog"
 	"net/http"
 	"os"
 	"os/signal"
@@ -34,13 +33,13 @@ import (
 )
 
 const verMajor = 1
-const verMinor = 1
+const verMinor = 2
 const verFix = 0
 
 type state struct {
 	config  *appConfig
 	monitor *taskMonitor
-	log     *syslog.Writer
+	log     logger
 }
 
 func printUsage() {
@@ -49,9 +48,6 @@ func printUsage() {
 }
 
 func main() {
-	syslogger, _ := syslog.New(syslog.LOG_INFO, "labean")
-	syslogger.Notice(fmt.Sprintf("Labean %d.%d.%d started.", verMajor, verMinor, verFix))
-
 	configPath := "./labean.conf"
 
 	if len(os.Args) > 1 {
@@ -70,7 +66,14 @@ func main() {
 		os.Exit(1)
 	}
 
-	if os.Geteuid() != 0 {
+	syslogger, err := newLogger(config.Log)
+	if err != nil {
+		log.Printf("Failed to initialize logger: %s", err)
+		os.Exit(1)
+	}
+	syslogger.Notice(fmt.Sprintf("Labean %d.%d.%d started.", verMajor, verMinor, verFix))
+
+	if !isRoot() {
 		syslogger.Warning("Warning: It seems that you started me without root permissions")
 		syslogger.Warning("So, if your tasks require superuser rights they will not work")
 	}

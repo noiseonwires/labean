@@ -1,4 +1,13 @@
-Labean is a simple HTTP/HTTPS port knocker for GNU/Linux.
+# Labean
+
+[![Go Report Card](https://goreportcard.com/badge/github.com/noiseonwires/labean)](https://goreportcard.com/report/github.com/noiseonwires/labean)
+[![Go Version](https://img.shields.io/github/go-mod/go-version/noiseonwires/labean)](https://github.com/noiseonwires/labean/blob/master/go.mod)
+[![License](https://img.shields.io/github/license/noiseonwires/labean)](https://github.com/noiseonwires/labean/blob/master/LICENSE)
+[![Latest Release](https://img.shields.io/github/v/release/noiseonwires/labean)](https://github.com/noiseonwires/labean/releases)
+[![Last Commit](https://img.shields.io/github/last-commit/noiseonwires/labean)](https://github.com/noiseonwires/labean/commits)
+[![Stars](https://img.shields.io/github/stars/noiseonwires/labean?style=social)](https://github.com/noiseonwires/labean/stargazers)
+
+Labean is a simple HTTP/HTTPS web (port) knocker for GNU/Linux.
 
 ### What is port knocking?
 Port knocking is a method of externally opening ports on a firewall by doing some actions, e.g. generating a connection attempt on a set of prespecified closed ports.  [[Wikipedia](https://en.wikipedia.org/wiki/Port_knocking)]
@@ -8,6 +17,7 @@ Another purpose is to disguise some services (e.g. VPN or proxy) running on the 
 
 ### Why Labean?
 Classic implementations of port knockers (like [knockd](http://www.zeroflux.org/projects/knock)) allow a client to open ports or start services by generating a connection attempt on a set of prespecified closed ports. This is simple and usually reliable, but there are some tricky cases. First of all, this requires using special clients or scripts on the client device (including mobile gadgets or network routers). A more significant problem is that all ports and protocols except standard 80 (HTTP) and 443 (HTTPS) can be banned on a corporate or ISP firewall, so you can't use 'classic' knocking in this case. That's why Labean was created.
+SStarted back in 2018, Labean was among the earliest web-based port knockers of its kind, and it remains a long-living project to this day.
 
 ### How does it work?
 Briefly: there is a front-end web server (like [nginx](http://nginx.org/) or [caddy](https://caddyserver.com/)) running on your VDS/VPS/etc., and it serves some ordinary web content like cute kittens' videos, Linux distros' ISOs, or a Wikipedia mirror. But when you want to connect to the hidden service (VPN, proxy, ssh daemon, etc.), you perform a GET request (using cURL or a web browser) like:
@@ -108,6 +118,7 @@ Here is the description of its fields:
 - `"www_root"`: path to a directory to serve as a static website on the root URL. If set, Labean acts as a simple static file server for any non-task request; leave it empty to keep the default behavior;
 - `"auth_token"`: if set, every task request must provide this token via the `X-Auth-Token` header or the `token` query parameter (e.g. `.../secret/vpn/on?token=...`); leave it empty to disable token auth;
 - `"username"` and `"password"`: if either is set, every task request must pass HTTP Basic authentication with these credentials; leave them empty to disable basic auth;
+- `"log"`: where to send logs. Use `"syslog"` (the default) to log to the system syslog service, or `"stdout"` to log to standard output. On platforms without syslog (e.g. Windows) Labean always logs to stdout regardless of this setting;
 - `"tasks"`: the array of 'tasks' to start or stop hidden services;
 - `"name"`: the unique name of the hidden service. You will use it in your HTTP GET queries: `https://someserver.org/secret/<name>/{on|off}`;
 - `"timeout"`: timeout to automatically switch your hidden service or firewall rule "off" after "on". If it is set to 0, the timeout feature will be disabled and you'll need to switch your service "off" manually;

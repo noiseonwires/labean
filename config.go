@@ -46,6 +46,7 @@ type appConfig struct {
 	AuthToken    string `json:"auth_token"`
 	Username     string `json:"username"`
 	Password     string `json:"password"`
+	Log          string `json:"log"`
 }
 
 func loadConfig(filename string) (newConfig *appConfig, err error) {

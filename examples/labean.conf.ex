@@ -11,6 +11,7 @@
   "auth_token": "",
   "username": "",
   "password": "",
+  "log": "syslog",
   "tasks": [ 
     {
       "name": "vpn",
